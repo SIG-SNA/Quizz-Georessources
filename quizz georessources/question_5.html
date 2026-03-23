@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+    <link rel="stylesheet" href="css/leaflet.css">
+    <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+    <link rel="stylesheet" href="css/qgis2web.css">
+    <link rel="stylesheet" href="css/fontawesome-all.min.css">
+    <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        .etiquette-finale {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: none;
+            box-shadow: none;
+            color: #000;
+            font-weight: bold;
+            font-size: 10px;
+            text-align: center;
+            white-space: normal !important;
+            width: 70px;
+            display: block;
+        }
+        #infoPanel {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 100%;
+            background: white;
+            z-index: 2000;
+            box-shadow: -3px 0 15px rgba(0,0,0,0.2);
+            overflow-y: auto;
+            display: none;
+            padding: 20px;
+            transition: transform 0.3s ease-out;
+            transform: translateX(100%);
+            font-family: Arial, sans-serif;
+        }
+        #infoPanel.open {
+            transform: translateX(0);
+            display: block;
+        }
+    </style>
+    <title>Question 5</title>
+</head>
+<body>
+    <div id="score" style="position: absolute; top: 10px; right: 10px; z-index: 1000; background: white; padding: 10px; border: 2px solid #333; border-radius: 5px; font-family: Arial; font-weight: bold;">
+        Tentatives : <span id="compteur">0</span>
+    </div>
+
+    <div id="consigne" style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; background: rgba(255, 255, 255, 0.9); padding: 15px; border: 2px solid #2c3e50; border-radius: 8px; font-family: Arial; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); max-width: 300px;">
+        <span style="font-size: 14px; color: #2c3e50;">
+            📍 <b>Question n°5 :</b><br>
+            Quelle commune possède la plus grosse proportion de forêt sur son territoire ?
+        </span>
+    </div>
+
+    <div id="map"></div>
+
+    <div id="infoPanel">
+        <button id="closePanelBtn" style="position: absolute; top: 10px; right: 10px; background: #eee; border: none; font-size: 24px; cursor: pointer; border-radius: 50%; width: 35px; height: 35px;">&times;</button>
+        <h3 id="panelTitle" style="color: #2c3e50; margin-top: 20px; text-align: center; border-bottom: 1px solid #eee; padding-bottom: 10px;"></h3>
+        <img id="panelImage" src="" alt="Image de la commune" style="width: 100%; border-radius: 8px; margin-top: 15px; display: none; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+        <p id="imageSource" style="font-size: 10px; text-align: right; color: #7f8c8d; margin-top: 5px; display: none;"></p>
+        <p id="panelText" style="font-size: 14px; color: #555; line-height: 1.6; margin-top: 20px;"></p>
+        <div id="storyMapLink" style="margin-top: 20px; padding: 15px; background-color: #eef2f7; border-left: 4px solid #3498db; border-radius: 4px;text-align: center;">
+            <p style="margin: 0; font-size: 13px; color: #2c3e50; font-weight: bold;">📖 Envie d'en savoir plus ?</p>
+            <p style="margin: 5px 0 10px 0; font-size: 12px; color: #555;">Découvrez les forêts de notre territoire dans cette Story Map dédiée.</p>
+            <a href="https://storymaps.arcgis.com/stories/244604954e0243f6be1d8d6e0618f5d2" target="_blank" style="display: inline-block; background: #3498db; color: white; text-decoration: none; padding: 8px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; transition: 0.3s;">
+                Consulter la Story Map →
+            </a>
+        </div>
+    </div>
+	<style>
+		#openPanelBtn:hover {
+			transform: scale(1.1); /* S'agrandit de 10% au survol */
+			background-color: #2980b9; /* Devient un peu plus foncé */
+		}
+	</style>
+
+	<div id="openPanelBtn" style="
+		position: absolute; 
+		bottom: 25px; 
+		right: 25px; 
+		z-index: 1000; 
+		background-color: #3498db; 
+		width: 45px; 
+		height: 45px; 
+		border-radius: 50%; 
+		display: none; 
+		align-items: center; 
+		justify-content: center; 
+		cursor: pointer; 
+		box-shadow: 0 4px 12px rgba(0,0,0,0.3); 
+		border: 2px solid white; 
+		font-family: 'Times New Roman', serif; 
+		font-weight: bold; 
+		font-size: 24px; 
+		color: white;
+		transition: all 0.2s ease; /* Permet une animation fluide du survol */
+		text-align: center;
+		line-height: 0;">
+		i
+	</div>
+    <script src="js/qgis2web_expressions.js"></script>
+    <script src="js/leaflet.js"></script>
+    <script src="js/L.Control.Layers.Tree.min.js"></script>
+    <script src="js/leaflet.rotatedMarker.js"></script>
+    <script src="js/leaflet.pattern.js"></script>
+    <script src="js/leaflet-hash.js"></script>
+    <script src="js/Autolinker.min.js"></script>
+    <script src="js/rbush.min.js"></script>
+    <script src="js/labelgun.min.js"></script>
+    <script src="js/labels.js"></script>
+    <script src="data/2025_COM_SNA_0.js"></script>
+
+    <script>
+        // 1. Variables de jeu
+        var scoreAvant = parseInt(localStorage.getItem('scoreGlobal')) || 0;
+        var clicsPage5 = 0;
+        var jeuGagne = false;
+        var inseeCible = "27400"; // Merey
+
+        document.getElementById('compteur').innerHTML = scoreAvant;
+
+        // 2. Initialisation de la carte
+        var map = L.map('map', { zoomControl: true, maxZoom: 28, minZoom: 1 });
+        var layer_OSM = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
+
+        // 3. Fonctions pour le panneau d'info
+        function displayInfoPanel(data) {
+            var panel = document.getElementById('infoPanel');
+            document.getElementById('panelTitle').innerHTML = data.title;
+            document.getElementById('panelText').innerHTML = data.text;
+            
+            var img = document.getElementById('panelImage');
+            var src = document.getElementById('imageSource');
+            
+            if (data.image) {
+                img.src = data.image;
+                img.style.display = 'block';
+                src.innerHTML = data.source || '';
+                src.style.display = 'block';
+            } else {
+                img.style.display = 'none';
+                src.style.display = 'none';
+            }
+
+            panel.style.display = 'block';
+            setTimeout(function() { panel.classList.add('open'); }, 10);
+        }
+
+        document.getElementById('closePanelBtn').addEventListener('click', function() {
+            var panel = document.getElementById('infoPanel');
+            panel.classList.remove('open');
+            setTimeout(function() { panel.style.display = 'none'; }, 300);
+        });
+
+        // 4. Style et Interaction
+        function style_2025_COM_SNA_0() {
+            return {
+                color: '#000000',
+                weight: 2,
+                fillOpacity: 0.01,
+                fillColor: '#000000',
+                interactive: true
+            };
+        }
+
+        function pop_2025_COM_SNA_0(feature, layer) {
+            layer.on('click', function (e) {
+                if (jeuGagne) return;
+
+                clicsPage5++;
+                var totalActuel = scoreAvant + clicsPage5;
+                document.getElementById('compteur').innerHTML = totalActuel;
+
+                var inseeClique = feature.properties['INSEE_COM'];
+                var nomCom = feature.properties['NOM_M']; 
+
+                layer.bindTooltip(nomCom, {
+                    permanent: true,
+                    direction: 'center',
+                    className: 'etiquette-finale'
+                }).openTooltip();
+
+                if (inseeClique === inseeCible) {
+                    jeuGagne = true;
+                    
+                    // SAUVEGARDE
+                    localStorage.setItem('scoreQ5', clicsPage5);
+                    localStorage.setItem('scoreGlobal', totalActuel);
+
+                    layer.setStyle({ fillColor: '#27ae60', fillOpacity: 0.8, color: '#000000', weight: 4 });
+
+                    var messagePopup = "<div style='text-align:center;'>" +
+                                       "<b style='font-size:18px;'>🏆 VICTOIRE !</b><br><br>" +
+                                       "C'est bien : <b>" + nomCom + "</b><br>" +
+                                       "Score cumulé : <b>" + totalActuel + "</b> tentatives.<br><br>" +
+                                       "<a href='question_6.html' style='display:inline-block; padding:10px; background:#27ae60; color:white; text-decoration:none; border-radius:5px;'>PASSER AU NIVEAU 6</a>" +
+                                       "</div>";
+                    
+                    layer.bindPopup(messagePopup).openPopup();
+
+                    displayInfoPanel({
+                        title: "Merey",
+                        text: "<b>ℹ️ Pour info :</b> Il y 6,61 km² de forêt sur la commune. Cela représente <b>76,28 % </b>de la superficie de la commune",
+                        image: "images/foret_merey.jpg", // Assure-toi que cette image existe
+                        source: "Source: SNA"
+                    });
+                    
+                    document.getElementById('consigne').style.display = 'none';
+
+                } else {
+                    layer.setStyle({ fillColor: '#e74c3c', fillOpacity: 0.5, color: '#000000', weight: 2 });
+                    layer.bindPopup("<b>RATÉ...</b><br>C'est la commune de : <br><b>" + nomCom + "</b>").openPopup();
+                }
+                L.DomEvent.stopPropagation(e);
+            });
+        }
+
+        var layer_2025_COM_SNA_0 = new L.geoJson(json_2025_COM_SNA_0, {
+            interactive: true,
+            onEachFeature: pop_2025_COM_SNA_0,
+            style: style_2025_COM_SNA_0
+        }).addTo(map);
+
+        map.fitBounds(layer_2025_COM_SNA_0.getBounds());
+		
+				// Gestion de la FERMETURE du panneau
+		document.getElementById('closePanelBtn').addEventListener('click', function() {
+			var panel = document.getElementById('infoPanel');
+			panel.classList.remove('open');
+			setTimeout(function() { 
+				panel.style.display = 'none'; 
+				// Si l'utilisateur a déjà gagné, on affiche le bouton "i" pour qu'il puisse rouvrir
+				if (jeuGagne) {
+					document.getElementById('openPanelBtn').style.display = 'flex';
+				}
+			}, 300);
+		});
+
+		// Gestion de la RÉOUVERTURE du panneau
+		document.getElementById('openPanelBtn').addEventListener('click', function() {
+			var panel = document.getElementById('infoPanel');
+			panel.style.display = 'block';
+			setTimeout(function() { panel.classList.add('open'); }, 10);
+			// On cache le bouton "i" puisqu'on ouvre le panneau
+			this.style.display = 'none';
+		});
+
+    </script>
+</body>
+</html>
