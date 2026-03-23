@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+    <link rel="stylesheet" href="css/leaflet.css">
+    <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+    <link rel="stylesheet" href="css/qgis2web.css">
+    <link rel="stylesheet" href="css/fontawesome-all.min.css">
+    <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        .etiquette-finale {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: none;
+            box-shadow: none;
+            color: #000;
+            font-weight: bold;
+            font-size: 10px;
+            text-align: center;
+            white-space: normal !important;
+            width: 70px;
+            display: block;
+        }
+        #infoPanel {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 100%;
+            background: white;
+            z-index: 2000;
+            box-shadow: -3px 0 15px rgba(0,0,0,0.2);
+            overflow-y: auto;
+            display: none;
+            padding: 20px;
+            transition: transform 0.3s ease-out;
+            transform: translateX(100%);
+            font-family: Arial, sans-serif;
+        }
+        #infoPanel.open {
+            transform: translateX(0);
+            display: block;
+        }
+        .story-map-btn {
+            display: inline-block;
+            background: #3498db;
+            color: white !important;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 13px;
+            font-weight: bold;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+    <title>Question 4 - La Seine à Vélo</title>
+</head>
+<body>
+    <div id="score" style="position: absolute; top: 10px; right: 10px; z-index: 1000; background: white; padding: 10px; border: 2px solid #333; border-radius: 5px; font-family: Arial; font-weight: bold;">
+        Tentatives : <span id="compteur">0</span>
+    </div>
+
+    <div id="consigne" style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; background: rgba(255, 255, 255, 0.9); padding: 15px; border: 2px solid #2c3e50; border-radius: 8px; font-family: Arial; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); max-width: 300px;">
+        <span style="font-size: 14px; color: #2c3e50;">
+            📍 <b>Question n°4 :</b><br>
+            Quelle section de la Seine à Vélo traverse le territoire de Seine Normandie Agglomération ?
+        </span>
+    </div>
+
+    <div id="map"></div>
+
+    <div id="infoPanel">
+        <button id="closePanelBtn" style="position: absolute; top: 10px; right: 10px; background: #eee; border: none; font-size: 24px; cursor: pointer; border-radius: 50%; width: 35px; height: 35px;">&times;</button>
+        <h3 id="panelTitle" style="color: #2c3e50; margin-top: 20px; text-align: center; border-bottom: 1px solid #eee; padding-bottom: 10px;"></h3>
+        <img id="panelImage" src="" alt="Image" style="width: 100%; border-radius: 8px; margin-top: 15px; display: none; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+        <p id="imageSource" style="font-size: 10px; text-align: right; color: #7f8c8d; margin-top: 5px; display: none;"></p>
+        <p id="panelText" style="font-size: 14px; color: #555; line-height: 1.6; margin-top: 20px;"></p>
+        
+        <div id="storyMapLink" style="margin-top: 30px; padding: 15px; background-color: #f0f7ff; border-radius: 8px; border: 1px solid #d0e2f3; text-align: center;">
+            <p style="margin: 0; font-size: 13px; color: #2c3e50; font-weight: bold;">📖 Envie d'en savoir plus ?</p>
+            <p style="margin: 5px 0 10px 0; font-size: 12px; color: #555;">Découvrez les faces cachées de l'itinéraire sur les communes de notre territoire dans cette Story Map dédiée.</p>
+            <a href="https://storymaps.arcgis.com/stories/a3cb4845ab7742499923bca27aec1c19" target="_blank" class="story-map-btn">Consulter la Story Map →</a>
+        </div>
+    </div>
+	<style>
+		#openPanelBtn:hover {
+			transform: scale(1.1); /* S'agrandit de 10% au survol */
+			background-color: #2980b9; /* Devient un peu plus foncé */
+		}
+	</style>
+
+	<div id="openPanelBtn" style="
+		position: absolute; 
+		bottom: 25px; 
+		right: 25px; 
+		z-index: 1000; 
+		background-color: #3498db; 
+		width: 45px; 
+		height: 45px; 
+		border-radius: 50%; 
+		display: none; 
+		align-items: center; 
+		justify-content: center; 
+		cursor: pointer; 
+		box-shadow: 0 4px 12px rgba(0,0,0,0.3); 
+		border: 2px solid white; 
+		font-family: 'Times New Roman', serif; 
+		font-weight: bold; 
+		font-size: 24px; 
+		color: white;
+		transition: all 0.2s ease; /* Permet une animation fluide du survol */
+		text-align: center;
+		line-height: 0;">
+		i
+	</div>
+    <script src="js/qgis2web_expressions.js"></script>
+    <script src="js/leaflet.js"></script>
+    <script src="js/L.Control.Layers.Tree.min.js"></script>
+    <script src="data/trace_seine_velo_0.js"></script>
+
+    <script>
+        // 1. Variables de jeu
+        var scoreAvant = parseInt(localStorage.getItem('scoreGlobal')) || 0;
+        var clicsPage4 = 0;
+        var jeuGagne = false;
+        var portionCible = "Vernon / Les Andelys"; 
+
+        document.getElementById('compteur').innerHTML = scoreAvant;
+
+        // 2. Initialisation de la carte
+        var map = L.map('map', { zoomControl: true, maxZoom: 28, minZoom: 1 });
+        
+        map.createPane('pointsPane');
+        map.getPane('pointsPane').style.zIndex = 650;
+        map.getPane('pointsPane').style.pointerEvents = 'none';
+
+        var layer_OSM = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
+
+        // 3. Fonctions Panneau
+        function displayInfoPanel(data) {
+            var panel = document.getElementById('infoPanel');
+            document.getElementById('panelTitle').innerHTML = data.title;
+            document.getElementById('panelText').innerHTML = data.text;
+            var img = document.getElementById('panelImage');
+            var src = document.getElementById('imageSource');
+            
+            if (data.image) {
+                img.src = data.image; img.style.display = 'block';
+                src.innerHTML = data.source || ''; src.style.display = 'block';
+            } else {
+                img.style.display = 'none'; src.style.display = 'none';
+            }
+            panel.style.display = 'block';
+            setTimeout(function() { panel.classList.add('open'); }, 10);
+        }
+
+        document.getElementById('closePanelBtn').addEventListener('click', function() {
+            var panel = document.getElementById('infoPanel');
+            panel.classList.remove('open');
+            setTimeout(function() { panel.style.display = 'none'; }, 300);
+        });
+
+        // 4. Style et Interaction
+        function style_trace_seine_velo_0() {
+            return {
+                color: '#3498db',
+                weight: 5,
+                opacity: 0.8,
+                lineCap: 'round',
+                lineJoin: 'round',
+                interactive: true
+            };
+        }
+
+        var layer_trace_seine_velo_0 = new L.geoJson(json_trace_seine_velo_0, {
+            style: style_trace_seine_velo_0,
+            onEachFeature: function (feature, layer) {
+                // --- CRÉATION DES POINTS NOIRS ---
+                var coords = feature.geometry.coordinates;
+                function drawNodes(s, e) {
+                    var pOpt = { radius: 7, fillColor: "black", color: "white", weight: 2, opacity: 1, fillOpacity: 1, pane: 'pointsPane' };
+                    L.circleMarker([s[1], s[0]], pOpt).addTo(map);
+                    L.circleMarker([e[1], e[0]], pOpt).addTo(map);
+                }
+                if (feature.geometry.type === "MultiLineString") {
+                    coords.forEach(line => drawNodes(line[0], line[line.length - 1]));
+                } else {
+                    drawNodes(coords[0], coords[coords.length - 1]);
+                }
+
+                // --- CLIC SUR LA LIGNE ---
+                layer.on('click', function (e) {
+                    if (jeuGagne) return;
+
+                    clicsPage4++;
+                    var totalActuel = scoreAvant + clicsPage4;
+                    document.getElementById('compteur').innerHTML = totalActuel;
+
+                    var nomPortion = feature.properties['name']; 
+                    var distance = feature.properties['distance_k'] || "NC";
+
+                    if (nomPortion === portionCible) {
+                        jeuGagne = true;
+                        
+                        // SAUVEGARDE DES SCORES
+                        localStorage.setItem('scoreQ4', clicsPage4);
+                        localStorage.setItem('scoreGlobal', totalActuel);
+
+                        layer.setStyle({ color: '#27ae60', weight: 8, opacity: 1 });
+                        
+                        var messagePopup = "<div style='text-align:center;'>" +
+                                           "<b style='font-size:18px;'>🏆 VICTOIRE !</b><br><br>" +
+                                           "C'est bien la portion : <b>" + nomPortion + "</b><br>" +
+                                           "Score cumulé : <b>" + totalActuel + "</b> tentatives.<br><br>" +
+                                           "<a href='question_5.html' style='display:inline-block; padding:10px; background:#27ae60; color:white; text-decoration:none; border-radius:5px;'>PASSER AU NIVEAU 5</a>" +
+                                           "</div>";
+                        layer.bindPopup(messagePopup).openPopup();
+
+                        displayInfoPanel({
+                            title: "La Seine à vélo entre Vernon et Les Andelys",
+                            text: "Cette portion relie Vernon aux Andelys sur la distance de <b>" + distance + " km</b>.",
+                            image: "images/seine_velo.jpg",
+                            source: "SNA"
+                        });
+                        document.getElementById('consigne').style.display = 'none';
+                    } else {
+                        layer.setStyle({ color: '#e74c3c', weight: 7, opacity: 1 });
+                        layer.bindPopup("<b>RATÉ...</b><br>C'est la portion : " + nomPortion).openPopup();
+                    }
+                    L.DomEvent.stopPropagation(e);
+                });
+            }
+        }).addTo(map);
+
+        map.fitBounds(layer_trace_seine_velo_0.getBounds());
+		
+				// Gestion de la FERMETURE du panneau
+		document.getElementById('closePanelBtn').addEventListener('click', function() {
+			var panel = document.getElementById('infoPanel');
+			panel.classList.remove('open');
+			setTimeout(function() { 
+				panel.style.display = 'none'; 
+				// Si l'utilisateur a déjà gagné, on affiche le bouton "i" pour qu'il puisse rouvrir
+				if (jeuGagne) {
+					document.getElementById('openPanelBtn').style.display = 'flex';
+				}
+			}, 300);
+		});
+
+		// Gestion de la RÉOUVERTURE du panneau
+		document.getElementById('openPanelBtn').addEventListener('click', function() {
+			var panel = document.getElementById('infoPanel');
+			panel.style.display = 'block';
+			setTimeout(function() { panel.classList.add('open'); }, 10);
+			// On cache le bouton "i" puisqu'on ouvre le panneau
+			this.style.display = 'none';
+		});
+
+    </script>
+</body>
+</html>

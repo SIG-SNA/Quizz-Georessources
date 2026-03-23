@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+    <link rel="stylesheet" href="css/leaflet.css">
+    <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+    <link rel="stylesheet" href="css/qgis2web.css">
+    <link rel="stylesheet" href="css/fontawesome-all.min.css">
+    <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        .etiquette-finale {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: none;
+            box-shadow: none;
+            color: #000;
+            font-weight: bold;
+            font-size: 10px;
+            text-align: center;
+            white-space: normal !important;
+            width: 80px;
+            display: block;
+        }
+        .leaflet-tooltip-top:before, .leaflet-tooltip-bottom:before, 
+        .leaflet-tooltip-left:before, .leaflet-tooltip-right:before {
+            display: none !important;
+        }
+        .btn-suivant {
+            display: inline-block;
+            background-color: #27ae60;
+            color: white !important;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        /* --- STYLE DES ENCADRÉS DANS LE PANNEAU --- */
+        .info-box {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 10px 0;
+            font-size: 13px;
+        }
+
+        /* --- STYLES DU PANNEAU LATÉRAL --- */
+        #infoPanel {
+            position: absolute; top: 0; right: 0; width: 320px; height: 100%;
+            background: white; z-index: 2000; box-shadow: -3px 0 15px rgba(0,0,0,0.2);
+            overflow-y: auto; display: none; padding: 20px;
+            transition: transform 0.3s ease-out; transform: translateX(100%);
+            font-family: Arial, sans-serif; box-sizing: border-box;
+        }
+        #infoPanel.open { transform: translateX(0); display: block; }
+
+        #openPanelBtn {
+            position: absolute; bottom: 25px; right: 25px; z-index: 1000; 
+            background-color: #3498db; width: 45px; height: 45px; border-radius: 50%; 
+            display: none; align-items: center; justify-content: center; cursor: pointer; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3); border: 2px solid white; 
+            font-family: 'Times New Roman', serif; font-weight: bold; font-size: 24px; 
+            color: white; transition: all 0.2s ease;
+        }
+    </style>
+    <title>Question 1</title>
+</head>
+<body>
+    <div id="overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 3000; display: flex; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 30px; border-radius: 15px; max-width: 500px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-family: Arial, sans-serif; text-align: center;">
+            <div style="display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #f0f0f0;">
+                <img src="images/logo_sna.jpg" alt="SNA" style="max-height: 50px; width: auto;">
+                <img src="images/logo_georessources.png" alt="Partenaire" style="max-height: 50px; width: auto;">
+            </div>
+            <h2 style="color: #2c3e50; margin-top: 0;">🗺️ Bienvenue dans le Géo-Quizz !</h2>
+            <p style="font-size: 14px; line-height: 1.6; color: #34495e; text-align: left;">
+                Prêt à tester vos connaissances sur le territoire de <b>Seine Normandie Agglomération</b> ?
+                <br><br>
+                <b>Le but est simple :</b> trouvez la bonne zone pour chacune des 10 questions en un minimum de clics et ainsi prouver que le territoire n'a aucun secret pour vous !
+            </p>
+            <button onclick="fermerIntro()" style="background: #27ae60; color: white; border: none; padding: 12px 30px; font-size: 16px; border-radius: 25px; cursor: pointer; font-weight: bold; transition: 0.3s; width: 100%;">
+                C'EST PARTI !
+            </button>
+        </div>
+    </div>
+
+    <div id="score" style="position: absolute; top: 10px; right: 10px; z-index: 1000; background: white; padding: 10px; border: 2px solid #333; border-radius: 5px; font-family: Arial; font-weight: bold;">
+        Tentatives : <span id="compteur">0</span>
+    </div>
+
+    <div id="consigne" style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; background: rgba(255, 255, 255, 0.9); padding: 15px; border: 2px solid #2c3e50; border-radius: 8px; font-family: Arial; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); max-width: 300px;">
+        <span style="font-size: 14px; color: #2c3e50;">
+            📍 <b>Question n°1 :</b><br>
+            Où se situe <b>Seine Normandie Agglomération</b> par rapport aux EPCI de l'Eure ?
+        </span>
+    </div>
+
+    <div id="infoPanel">
+        <button id="closePanelBtn" style="position: absolute; top: 10px; right: 10px; background: #eee; border: none; font-size: 24px; cursor: pointer; border-radius: 50%; width: 35px; height: 35px;">&times;</button>
+        <h3 id="panelTitle" style="color: #2c3e50; margin-top: 20px; text-align: center; border-bottom: 1px solid #eee; padding-bottom: 10px;">Connaissez-vous SNA ?</h3>
+        <div id="panelText" style="color: #34495e; line-height: 1.5; font-size: 14px;"></div>
+    </div>
+    <div id="openPanelBtn">i</div>
+
+    <div id="map"></div>
+
+    <script src="js/qgis2web_expressions.js"></script>
+    <script src="js/leaflet.js"></script>
+    <script src="js/L.Control.Layers.Tree.min.js"></script>
+    <script src="js/leaflet.rotatedMarker.js"></script>
+    <script src="js/leaflet.pattern.js"></script>
+    <script src="js/leaflet-hash.js"></script>
+    <script src="js/Autolinker.min.js"></script>
+    <script src="js/rbush.min.js"></script>
+    <script src="js/labelgun.min.js"></script>
+    <script src="js/labels.js"></script>
+    <script src="data/EPCI_Eure_0.js"></script>
+
+    <script>
+        localStorage.clear();
+        localStorage.setItem('scoreGlobal', 0);
+
+        function fermerIntro() {
+            localStorage.setItem('startTime', Date.now());
+            var overlay = document.getElementById('overlay');
+            overlay.style.opacity = '0';
+            overlay.style.transition = 'opacity 0.5s ease';
+            setTimeout(function() { 
+                overlay.style.display = 'none'; 
+            }, 500);
+        }
+
+        var nbTentativesQ1 = 0;
+        var jeuGagne = false;
+        var sirenCible = "200072312"; 
+
+        var map = L.map('map', { zoomControl: false, maxZoom: 28, minZoom: 1 });
+        var layer_OSM = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        function style_EPCI_Eure_0_0() {
+            return { color: '#000000', weight: 3.0, fillOpacity: 0.01, fillColor: '#000000', interactive: true };
+        }
+
+        function pop_EPCI_Eure_0(feature, layer) {
+            layer.on('click', function (e) {
+                if (jeuGagne) return;
+                nbTentativesQ1++;
+                document.getElementById('compteur').innerHTML = nbTentativesQ1;
+
+                if (feature.properties['CODE_SIREN'] === sirenCible) {
+                    jeuGagne = true;
+                    localStorage.setItem('scoreQ1', nbTentativesQ1);
+                    localStorage.setItem('scoreGlobal', nbTentativesQ1);
+                    layer.setStyle({ fillColor: '#27ae60', fillOpacity: 0.8, weight: 4 });
+
+                    var messagePopup = "<div style='text-align:center;'><b style='font-size:16px;'>🏆 VICTOIRE !</b><br><br>Seine Normandie Agglomération trouvée en " + nbTentativesQ1 + " coups.<br><a href='question_2.html' class='btn-suivant'>PASSER AU NIVEAU 2</a></div>";
+
+                    layer_EPCI_Eure_0.eachLayer(function(l) {
+                        l.bindTooltip(l.feature.properties['NOM'], { permanent: true, direction: 'center', className: 'etiquette-finale' }).openTooltip();
+                    });
+
+                    // --- MISE À JOUR DU PANNEAU LATÉRAL ---
+                    document.getElementById('consigne').style.display = 'none'; 
+                    document.getElementById('panelText').innerHTML = `
+                        <p>Seine Normandie Agglomération (SNA) est un territoire situé sur l’axe Seine entre Paris et Rouen, composé de 61 communes.</p>
+                        <ul style="padding-left: 20px;">
+                            <li><b>Population :</b> ~83 000 habitants</li>
+                            <li><b>Superficie :</b> 696 km²</li>
+                        </ul>
+                        
+                        <img src="images/photo_siege_sna.jpg" alt="Siège de SNA" style="width:100%; border-radius:8px; margin-top:10px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                         <p style="font-size: 10px; color: #7f8c8d; text-align: right; margin-top: 15px;">Source : Wikipedia</p>
+                        <p>
+                            <b>📍 Siège social :</b><br>
+                            12 rue de la Mare à Jouy<br>
+                            27120 Douains
+                        </p>
+
+                        <div style="margin-top: 20px; padding: 15px; background-color: #eef2f7; border-left: 4px solid #3498db; border-radius: 4px; text-align: center;">
+                            <p style="margin: 0; font-size: 13px; color: #2c3e50; font-weight: bold;">📖 Envie d'en savoir plus ?</p>
+                            <a href="https://www.sna27.fr/" target="_blank" style="display: inline-block; background: #3498db; color: white; text-decoration: none; padding: 8px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; transition: 0.3s;">
+                                Visitez le site internet de l'agglomération →
+                            </a>
+                        </div>
+
+
+                    `;
+                    document.getElementById('infoPanel').style.display = 'block';
+                    setTimeout(() => document.getElementById('infoPanel').classList.add('open'), 10);
+
+                } else {
+                    layer.setStyle({ fillColor: '#e74c3c', fillOpacity: 0.5 });
+                    var messagePopup = "<b>RATÉ...</b><br>C'est : " + feature.properties['NOM'];
+                }
+                layer.bindPopup(messagePopup).openPopup();
+                L.DomEvent.stopPropagation(e);
+            });
+        }
+
+        var layer_EPCI_Eure_0 = new L.geoJson(json_EPCI_Eure_0, {
+            interactive: true,
+            onEachFeature: pop_EPCI_Eure_0,
+            style: style_EPCI_Eure_0_0
+        }).addTo(map);
+
+        map.fitBounds(layer_EPCI_Eure_0.getBounds());
+        L.control.zoom({ position: 'topleft' }).addTo(map);
+
+        document.getElementById('closePanelBtn').addEventListener('click', function() {
+            document.getElementById('infoPanel').classList.remove('open');
+            setTimeout(() => { 
+                document.getElementById('infoPanel').style.display = 'none'; 
+                if (jeuGagne) document.getElementById('openPanelBtn').style.display = 'flex';
+            }, 300);
+        });
+
+        document.getElementById('openPanelBtn').addEventListener('click', function() {
+            document.getElementById('infoPanel').style.display = 'block';
+            setTimeout(() => document.getElementById('infoPanel').classList.add('open'), 10);
+            this.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
