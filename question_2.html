@@ -205,13 +205,24 @@
                     
                     layer.bindPopup(messagePopup).openPopup();
 
-                    displayInfoPanel({
-                        title: "Frenelles-en-Vexin",
-                        text: "<b>ℹ️ Pour info :</b><br>Frenelles-en-Vexin est issu de la fusion de <b>3 communes</b> : Boisemont, Corny, Fresne-l'Archevêque.",
-                        image: "images/Boisemont_église2.jpg",
-                        source: "Source: Mairie de Frenelles-en-Vexin"
-                    });
-                    
+					displayInfoPanel({
+						title: "Frenelles-en-Vexin",
+						text: `<b>ℹ️ Le saviez-vous ? </b><br>Frenelles-en-Vexin est issu de la fusion de <b>3 communes</b> : Boisemont, Corny, Fresne-l'Archevêque.
+							<ul style="padding-left: 20px;">
+								<li><b>Population :</b> 1 690 habitants</li>
+								<li><b>Superficie :</b> 29,06 km²</li>
+							</ul>
+							
+							<div style="margin-top: 20px; padding: 15px; background-color: #eef2f7; border-left: 4px solid #3498db; border-radius: 4px; text-align: center;">
+								<p style="margin: 0; font-size: 13px; color: #2c3e50; font-weight: bold;">📖 Envie d'en savoir plus ?</p>
+								<a href="https://www.frenellesenvexin.fr/site/" target="_blank" style="display: inline-block; background: #3498db; color: white; text-decoration: none; padding: 8px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; transition: 0.3s;">
+									Visitez le site internet de la commune →
+								</a>
+							</div>`,
+						image: "images/Boisemont_église2.jpg",
+						source: "Source: Mairie de Frenelles-en-Vexin"
+					});
+						
                     document.getElementById('consigne').style.display = 'none';
 
                 } else {

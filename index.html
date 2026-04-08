@@ -171,20 +171,23 @@
 
                     // --- MISE À JOUR DU PANNEAU LATÉRAL ---
                     document.getElementById('consigne').style.display = 'none'; 
-                    document.getElementById('panelText').innerHTML = `
-                        <p>Seine Normandie Agglomération (SNA) est un territoire situé sur l’axe Seine entre Paris et Rouen, composé de 61 communes.</p>
-                        <ul style="padding-left: 20px;">
-                            <li><b>Population :</b> ~83 000 habitants</li>
-                            <li><b>Superficie :</b> 696 km²</li>
-                        </ul>
-                        
-                        <img src="images/photo_siege_sna.jpg" alt="Siège de SNA" style="width:100%; border-radius:8px; margin-top:10px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-                         <p style="font-size: 10px; color: #7f8c8d; text-align: right; margin-top: 15px;">Source : Wikipedia</p>
-                        <p>
-                            <b>📍 Siège social :</b><br>
-                            12 rue de la Mare à Jouy<br>
-                            27120 Douains
-                        </p>
+document.getElementById('panelText').innerHTML = `
+    <p style="margin-top: 0; color: #555; font-size: 14px;"><b>ℹ️ Le saviez-vous ?</b></p>
+    
+    <p style="color: #555; line-height: 1.6; margin-bottom: 15px;">
+        Seine Normandie Agglomération (SNA) est un territoire situé sur l’axe Seine entre Paris et Rouen, composé de 61 communes :<br>
+        - Population : ~83 000 habitants<br>
+        - Superficie : 696 km²
+    </p>
+    
+    <img src="images/photo_siege_sna.jpg" alt="Siège de SNA" style="width:100%; border-radius:8px; margin-top:10px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+    <p style="font-size: 10px; color: #7f8c8d; text-align: right; margin-top: 5px; margin-bottom: 20px;">Source : Wikipedia</p>
+    
+    <p style="color: #555; line-height: 1.6;">
+        <b>📍 Siège social :</b><br>
+        12 rue de la Mare à Jouy<br>
+        27120 Douains
+    </p>
 
                         <div style="margin-top: 20px; padding: 15px; background-color: #eef2f7; border-left: 4px solid #3498db; border-radius: 4px; text-align: center;">
                             <p style="margin: 0; font-size: 13px; color: #2c3e50; font-weight: bold;">📖 Envie d'en savoir plus ?</p>

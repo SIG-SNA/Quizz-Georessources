@@ -9,9 +9,7 @@
     <link rel="stylesheet" href="css/qgis2web.css">
     <link rel="stylesheet" href="css/fontawesome-all.min.css">
     <style>
-        html, body, #map {
-            width: 100%; height: 100%; padding: 0; margin: 0;
-        }
+        html, body, #map { width: 100%; height: 100%; padding: 0; margin: 0; }
         .etiquette-finale {
             background-color: rgba(255, 255, 255, 0.9);
             border: none; box-shadow: none; color: #000;
@@ -29,19 +27,8 @@
         #infoPanel.open { transform: translateX(0); display: block; }
 
         /* --- MODE PARTAGE PLEIN ÉCRAN --- */
-        body.share-active #map, 
-        body.share-active #score, 
-        body.share-active #consigne, 
-        body.share-active #openPanelBtn {
-            display: none !important;
-        }
-        body.share-active #infoPanel {
-            width: 100% !important;
-            transform: none !important;
-            display: block !important;
-            position: relative;
-            box-shadow: none;
-        }
+        body.share-active #map, body.share-active #score, body.share-active #consigne, body.share-active #openPanelBtn { display: none !important; }
+        body.share-active #infoPanel { width: 100% !important; transform: none !important; display: block !important; position: relative; box-shadow: none; }
         body.share-active #closePanelBtn { display: none; }
 
         .score-row {
@@ -75,7 +62,7 @@
         </div>
     </div>
 
-    <div id="openPanelBtn" style="position: absolute; bottom: 25px; right: 25px; z-index: 1000; background-color: #3498db; width: 45px; height: 45px; border-radius: 50%; display: none; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); border: 2px solid white; font-family: 'Times New Roman', serif; font-weight: bold; font-size: 24px; color: white; transition: all 0.2s ease; text-align: center; line-height: 0;">i</div>
+    <div id="openPanelBtn" style="position: absolute; bottom: 25px; right: 25px; z-index: 1000; background-color: #3498db; width: 45px; height: 45px; border-radius: 50%; display: none; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); border: 2px solid white; font-family: 'Times New Roman', serif; font-weight: bold; font-size: 24px; color: white; text-align: center; line-height: 0;">i</div>
 
     <script src="js/leaflet.js"></script>
     <script src="data/2025_COM_SNA_0.js"></script>
@@ -86,7 +73,6 @@
         var jeuGagne = false;
         var inseeCible = "27213"; 
 
-        // --- DÉTECTION DU MODE PARTAGE ---
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('share')) {
             document.body.classList.add('share-active');
@@ -101,9 +87,7 @@
 
         document.getElementById('compteur').innerHTML = scorePrecedent;
         var map = L.map('map').setView([49.1, 1.4], 10);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-}).addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
         function pop_2025_COM_SNA_0(feature, layer) {
             layer.on('click', function (e) {
@@ -113,21 +97,31 @@
                 document.getElementById('compteur').innerHTML = total;
                 var nomCom = feature.properties['NOM_M'];
                 layer.bindTooltip(nomCom, {permanent: true, className: 'etiquette-finale', direction:'center'}).openTooltip();
+                
                 if (feature.properties['INSEE_COM'] === inseeCible) {
                     jeuGagne = true;
                     localStorage.setItem('scoreQ10', clicsPage10);
                     localStorage.setItem('scoreGlobal', total);
                     layer.setStyle({ fillColor: '#27ae60', fillOpacity: 0.8, color: '#000', weight: 4 });
                     
-				document.getElementById('panelTitle').innerHTML = "Parc éolien de Tourny";
+                    document.getElementById('panelTitle').innerHTML = "Parc éolien de Tourny";
+                    document.getElementById('panelText').innerHTML = `
+                        <img src="images/eolien_vexin.jpg" alt="Vexin-sur-Epte" style="width:100%; border-radius:8px; margin-top:10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                        <p style="font-size: 10px; color: #95a5a6; text-align: right; margin-bottom: 15px;">Source : SNA</p>
+                        <div style="font-family: Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #444;">
+                            <p style="margin-bottom: 15px;">
+                                <b style="color: #2c3e50;">ℹ️ Pour info :</b><br>
+                                Le parc est en activité depuis septembre 2017 et a été inauguré en 2018.<br>
+                                Il est composé de 6 éoliennes d'une hauteur de <b>97 m</b>. La production permet d'alimenter l'équivalent de <b>2 500 foyers </b>(hors chauffage).
+                            </p>
+                        </div>
+                        <div style="margin-top: 20px; padding: 15px; background-color: #f0f4f8; border-left: 4px solid #3498db; border-radius: 4px; text-align: center;">
+                            <p style="margin: 0 0 10px 0; font-size: 13px; color: #2c3e50; font-weight: bold;">📖 Envie d'en savoir plus ?</p>
+                            <a href="https://www.ecologie.gouv.fr/politiques-publiques/eolien-terrestre" target="_blank" style="display: inline-block; background: #3498db; color: white; text-decoration: none; padding: 8px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; transition: 0.3s;">
+                                Visitez le site internet du ministère →
+                            </a>
+                        </div>`;
 
-				document.getElementById('panelText').innerHTML = `
-					<img src="images/eolien_vexin.jpg" alt="Vexin-sur-Epte" style="width:100%; border-radius:8px; margin-top:10px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-					
-					<p style="font-size: 10px; color: #7f8c8d; text-align: right; margin-bottom: 15px;">Source : SNA</p>
-
-					<p><b>ℹ️ Le saviez-vous ?</b><br>
-					blab</p>`;
                     document.getElementById('recapSection').style.display = 'block';
                     document.getElementById('infoPanel').style.display = 'block';
                     setTimeout(() => document.getElementById('infoPanel').classList.add('open'), 10);
@@ -153,11 +147,7 @@
                 secondes = Math.floor((timeDiff % 60000) / 1000);
             }
 
-var grade = (totalFinal <= 10) ? "🏆 Légende du quizz" : 
-            (totalFinal <= 20) ? "⭐ Étoile montante" : 
-            (totalFinal <= 30) ? "🗺️ Géographe confirmé" : 
-            (totalFinal <= 50) ? "🧭 Géographe amateur" : 
-            "🎒 Géographe stagiaire";
+            var grade = (totalFinal <= 10) ? "🏆 Légende du quizz" : (totalFinal <= 20) ? "⭐ Étoile montante" : (totalFinal <= 30) ? "🗺️ Géographe confirmé" : (totalFinal <= 50) ? "🧭 Géographe amateur" : "🎒 Géographe stagiaire";
             
             var detailScoresHtml = "";
             for (var i = 1; i <= 10; i++) {
@@ -165,32 +155,25 @@ var grade = (totalFinal <= 10) ? "🏆 Légende du quizz" :
                 detailScoresHtml += `<div class="score-row"><span>Niveau ${i} :</span><b>${scoreQ} clics</b></div>`;
             }
 
-            var currentUrl = window.location.href.split('?')[0];
-            var shareUrl = currentUrl + `?score=${totalFinal}&min=${minutes}&sec=${secondes}&share=true`;
+            var shareUrl = window.location.href.split('?')[0] + `?score=${totalFinal}&min=${minutes}&sec=${secondes}&share=true`;
 
-            var htmlRecap = `
+            document.getElementById('panelTitle').innerHTML = "Bilan de la Partie";
+            document.getElementById('panelText').innerHTML = `
                 <div style="font-family: Arial; color: #2c3e50; display: flex; flex-direction: column; min-height: 100%;">
                     <div style="border: 4px double #3498db; padding: 15px; background: #fffcf5; border-radius: 10px; text-align: center; margin-bottom: 20px;">
                         <h2 style="margin: 5px 0; color: #3498db; font-size: 18px;">${grade}</h2>
                         <p style="font-size:11px; margin: 0;">Temps total : ${minutes}min ${secondes}s</p>
                     </div>
-                    
                     <div style="background:#f8f9fa; padding:15px; border-radius:10px; margin-bottom:15px; border:1px solid #eee;">
                         ${detailScoresHtml}
                         <hr style="border:0; border-top:2px solid #ccc; margin:10px 0;">
                         <p style="text-align:center; font-size:18px; margin:0;">Total : <b>${totalFinal} clics</b></p>
                     </div>
-
-                    <button onclick="partagerScore('${shareUrl}', ${totalFinal})" style="width:100%; background:#3498db; color:white; border:none; padding:12px; border-radius:5px; cursor:pointer; font-weight:bold;">📤 PARTAGER MON SCORE</button>
                     
-                    <div id="manual-copy-area" style="margin-top:10px; text-align:center; background: #f0f7ff; padding: 8px; border-radius: 5px;">
-                        <p style="font-size:10px; color:#7f8c8d; margin-bottom:5px;">Lien direct :</p>
-                        <input type="text" value="${shareUrl}" id="shareInput" readonly style="width:70%; font-size:10px; padding:5px; border:1px solid #ccc; border-radius:3px;">
-                        <button onclick="copierLien()" style="padding:5px; font-size:10px; cursor:pointer;">Copier</button>
-                    </div>
+                    <button id="mainShareBtn" onclick="partagerScore('${shareUrl}', ${totalFinal})" style="width:100%; background:#3498db; color:white; border:none; padding:12px; border-radius:5px; cursor:pointer; font-weight:bold;">📤 PARTAGER MON SCORE</button>
 
                     <button onclick="localStorage.clear(); window.location.href='index.html';" style="width:100%; background:#2c3e50; color:white; border:none; padding:12px; border-radius:5px; cursor:pointer; font-weight:bold; margin-top:15px;">🔄 RECOMMENCER</button>
-
+                    
                     <div style="margin-top: auto; padding-top: 30px; padding-bottom: 20px; text-align: center;">
                         <p style="font-weight: bold; font-size: 13px; margin-bottom: 15px; color: #2c3e50;">🙏 Merci pour votre participation !</p>
                         <div style="display: flex; justify-content: center; align-items: center; gap: 15px; flex-wrap: wrap;">
@@ -198,64 +181,75 @@ var grade = (totalFinal <= 10) ? "🏆 Légende du quizz" :
                             <img src="images/logo_georessources.png" alt="Geo" style="max-height: 45px; width: auto; object-fit: contain;">
                         </div>
                     </div>
-                </div>
-            `;
-            document.getElementById('panelTitle').innerHTML = "Bilan de la Partie";
-            document.getElementById('panelText').innerHTML = htmlRecap;
+                </div>`;
             document.getElementById('recapSection').style.display = "none";
         }
 
-        function genererRecapPartage(score, min, sec) {
-			var grade = (score <= 10) ? "🏆 Légende du quizz" : 
-						(score <= 20) ? "⭐ Étoile montante" : 
-						(score <= 30) ? "🗺️ Géographe confirmé" : 
-						(score <= 50) ? "🧭 Géographe amateur" : 
-						"🎒 Géographe stagiaire";
-            var htmlRecap = `
-                <div style="font-family: Arial; color: #2c3e50; text-align: center; max-width: 500px; margin: 0 auto; display: flex; flex-direction: column; min-height: 80vh; justify-content: center;">
-                    <p style="font-size: 18px; margin-bottom: 10px;">Un ami vous défie au <b>Géo-Quizz SNA</b> !</p>
+function genererRecapPartage(score, min, sec) {
+            var grade = (score <= 10) ? "🏆 Légende du quizz" : (score <= 20) ? "⭐ Étoile montante" : (score <= 30) ? "🗺️ Géographe confirmé" : (score <= 50) ? "🧭 Géographe amateur" : "🎒 Géographe stagiaire";
+            
+            // Titre principal
+            document.getElementById('panelTitle').innerHTML = "Bilan Partagé";
+            
+            // Conteneur principal moderne
+            document.getElementById('panelText').innerHTML = `
+                <div style="font-family: Arial, sans-serif; color: #2c3e50; text-align: center; max-width: 500px; margin: 0 auto; background: #fafafa; padding: 20px; border-radius: 15px; border: 1px solid #eee;">
                     
-                    <div style="border: 4px double #3498db; padding: 30px 20px; border-radius: 15px; margin: 20px 0; background:#fffcf5; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-                        <p style="text-transform: uppercase; font-size: 10px; letter-spacing: 1px; color: #7f8c8d; margin-bottom: 5px;">Son résultat :</p>
-                        <h1 style="color: #3498db; margin: 0; font-size: 26px;">${grade}</h1>
-                        <p style="font-size: 22px; margin: 15px 0;"><b>${score} clics</b></p>
-                        <p style="font-size: 14px; color: #7f8c8d;">Temps : ${min}min ${sec}s</p>
+                    <p style="font-size: 18px; margin-top:10px;">On vous défie au <b>Géo-Quizz SNA</b> !</p>
+                    
+                    <div style="background: white; padding: 30px 20px; border-radius: 15px; margin: 20px 0; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border: 1px solid #eee;">
+                        
+                        <div style="margin-bottom: 25px;">
+                            <p style="font-size: 12px; color: #7f8c8d; margin: 0; text-transform: uppercase; letter-spacing: 1px; font-weight: bold;">Le score à battre :</p>
+                            <p style="font-size: 52px; font-weight: bold; margin: 10px 0; color: #2c3e50;">${score} <span style="font-size: 24px;">clics</span></p>
+                        </div>
+                        
+                        <p style="color: #3498db; margin: 0 0 10px 0; font-size: 18px; font-weight: bold;">${grade}</p>
+                        
+                        <p style="font-size: 12px; color: #7f8c8d; margin: 0;">Performance réalisée en ${min}min ${sec}s</p>
                     </div>
 
-                    <p style="font-weight:bold; font-size: 18px; margin-bottom: 25px;">Pensez-vous pouvoir faire mieux ?</p>
+                    <button onclick="window.location.href='index.html';" style="width:100%; background:#27ae60; color:white; border:none; padding:20px; border-radius:12px; font-weight:bold; font-size:22px; cursor:pointer; box-shadow: 0 4px 0 #219150; transition: all 0.2s ease;">🚀 TENTER MA CHANCE</button>
                     
-                    <button onclick="window.location.href='index.html';" style="width:100%; background:#27ae60; color:white; border:none; padding:20px; border-radius:12px; cursor:pointer; font-weight:bold; font-size:22px; box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);">🚀 TENTER MA CHANCE</button>
-
-                    <div style="margin-top: 60px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
-                        <p style="font-weight: bold; font-size: 14px; margin-bottom: 20px; color: #2c3e50;">🙏 Merci pour votre participation !</p>
-                        <div style="display: flex; justify-content: center; align-items: center; gap: 20px;">
-                            <img src="images/logo_sna.jpg" alt="SNA" style="max-height: 55px;">
-                            <img src="images/logo_georessources.png" alt="Geo" style="max-height: 55px;">
+                    <div style="margin-top: 60px; border-top: 1px solid #eee; padding-top: 20px;">
+                        <div style="display: flex; justify-content: center; gap: 20px;">
+                            <img src="images/logo_sna.jpg" alt="SNA" style="max-height: 55px; width: auto; object-fit: contain;">
+                            <img src="images/logo_georessources.png" alt="Geo" style="max-height: 55px; width: auto; object-fit: contain;">
                         </div>
                     </div>
-                </div>
-            `;
-            document.getElementById('panelTitle').innerHTML = "Bilan Partagé";
-            document.getElementById('panelText').innerHTML = htmlRecap;
+                </div>`;
         }
 
         function partagerScore(url, score) {
-            const text = `J'ai terminé le Géo-Quizz SNA avec ${score} clics ! 🗺️\n\nDécouvrez mon score ici : ${url}`;
+            const text = `J'ai terminé le Géo-Quizz SNA avec ${score} clics ! 🗺️ Relevez le défi :`;
+            const shareUrl = url;
+
             if (navigator.share) {
-                navigator.share({ title: 'Mon Bilan SNA', text: text }).catch(console.error);
+                navigator.share({
+                    title: 'Mon Bilan Géo-Quizz SNA',
+                    text: text,
+                    url: shareUrl
+                }).catch(console.error);
             } else {
-                copierLien();
+                const menuHtml = `
+                    <div id="socialShareMenu" style="margin-top:20px; border-top: 1px solid #eee; padding-top: 15px;">
+                        <p style="font-size: 11px; color: #7f8c8d; margin-bottom: 10px; text-align: center; text-transform: uppercase; letter-spacing: 1px;">Partager mon résultat</p>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                            <a href="https://wa.me/?text=${encodeURIComponent(text + " " + shareUrl)}" target="_blank" style="background:#25D366; color:white; padding:12px 5px; border-radius:6px; text-decoration:none; font-size:11px; text-align:center;"><i class="fab fa-whatsapp" style="font-size:16px;"></i><br>WhatsApp</a>
+                            <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}" target="_blank" style="background:#000000; color:white; padding:12px 5px; border-radius:6px; text-decoration:none; font-size:11px; text-align:center;"><i class="fab fa-x-twitter" style="font-size:16px;"></i><br>Twitter</a>
+                            <a href="https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}" target="_blank" style="background:#0077b5; color:white; padding:12px 5px; border-radius:6px; text-decoration:none; font-size:11px; text-align:center;"><i class="fab fa-linkedin-in" style="font-size:16px;"></i><br>LinkedIn</a>
+                            <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}" target="_blank" style="background:#4267B2; color:white; padding:12px 5px; border-radius:6px; text-decoration:none; font-size:11px; text-align:center;"><i class="fab fa-facebook-f" style="font-size:16px;"></i><br>Facebook</a>
+                            <button onclick="copierLienDirect('${shareUrl}')" style="background:#95a5a6; color:white; border:none; padding:12px 5px; border-radius:6px; cursor:pointer; font-size:11px;"><i class="fas fa-link" style="font-size:16px;"></i><br>Lien</button>
+                        </div>
+                    </div>`;
+                const btnInitial = document.getElementById('mainShareBtn');
+                if (btnInitial) btnInitial.outerHTML = menuHtml;
             }
         }
 
-        function copierLien() {
-            var copyText = document.getElementById("shareInput");
-            if(copyText) {
-                copyText.select();
-                copyText.setSelectionRange(0, 99999);
-                navigator.clipboard.writeText(copyText.value);
-                alert("Lien copié ! Vous pouvez maintenant le coller (WhatsApp, Mail, etc.)");
-            }
+        function copierLienDirect(url) {
+            navigator.clipboard.writeText(url);
+            alert("Lien copié !");
         }
 
         document.getElementById('closePanelBtn').addEventListener('click', function() {
