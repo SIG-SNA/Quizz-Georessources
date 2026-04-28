@@ -84,7 +84,9 @@
             <p style="font-size: 14px; line-height: 1.6; color: #34495e; text-align: left;">
                 Prêt à tester vos connaissances sur le territoire de <b>Seine Normandie Agglomération</b> ?
                 <br><br>
-                <b>Le but est simple :</b> trouvez la bonne zone pour chacune des 10 questions en un minimum de clics et ainsi prouver que le territoire n'a aucun secret pour vous !
+                <b>Le but est simple :</b> trouvez la bonne zone pour chacune des 10 questions en un minimum de clic(s) et ainsi prouver que le territoire n'a aucun secret pour vous !
+				<br><br>
+				<b>Aide : </b> Vous pouvez zoomer sur la carte pour voir le nom des communes avant de cliquer
             </p>
             <button onclick="fermerIntro()" style="background: #27ae60; color: white; border: none; padding: 12px 30px; font-size: 16px; border-radius: 25px; cursor: pointer; font-weight: bold; transition: 0.3s; width: 100%;">
                 C'EST PARTI !
@@ -163,7 +165,7 @@
                     localStorage.setItem('scoreGlobal', nbTentativesQ1);
                     layer.setStyle({ fillColor: '#27ae60', fillOpacity: 0.8, weight: 4 });
 
-                    var messagePopup = "<div style='text-align:center;'><b style='font-size:16px;'>🏆 VICTOIRE !</b><br><br>Seine Normandie Agglomération trouvée en " + nbTentativesQ1 + " coups.<br><a href='question_2.html' class='btn-suivant'>PASSER AU NIVEAU 2</a></div>";
+                    var messagePopup = "<div style='text-align:center;'><b style='font-size:16px;'>🏆 VICTOIRE !</b><br><br>Seine Normandie Agglomération trouvée en " + nbTentativesQ1 + " tentative(s).<br><a href='question_2.html' class='btn-suivant'>PASSER À LA QUESTION 2</a></div>";
 
                     layer_EPCI_Eure_0.eachLayer(function(l) {
                         l.bindTooltip(l.feature.properties['NOM'], { permanent: true, direction: 'center', className: 'etiquette-finale' }).openTooltip();
@@ -184,7 +186,7 @@ document.getElementById('panelText').innerHTML = `
 
     
     <p style="color: #555; line-height: 1.6;">
-        <b>📍 Siège social :</b><br>
+        <b>📍 Accueil du public :</b><br>
         12 rue de la Mare à Jouy<br>
         27120 Douains
     </p>
