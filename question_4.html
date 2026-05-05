@@ -234,7 +234,7 @@
                         document.getElementById('consigne').style.display = 'none';
                     } else {
                         layer.setStyle({ color: '#e74c3c', weight: 7, opacity: 1 });
-                        layer.bindPopup("<b>RATÉ...</b><br>C'est la portion : " + nomPortion).openPopup();
+                        layer.bindPopup("<b>RATÉ...</b><br>Ce n'est pas la portion : " + nomPortion).openPopup();
                     }
                     L.DomEvent.stopPropagation(e);
                 });

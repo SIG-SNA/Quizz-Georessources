@@ -225,7 +225,7 @@ displayInfoPanel({
 
                 } else {
                     layer.setStyle({ fillColor: '#e74c3c', fillOpacity: 0.5, color: '#000000', weight: 2 });
-                    layer.bindPopup("<b>RATÉ...</b><br>C'est la commune de : <br><b>" + nomCom + "</b>").openPopup();
+                    layer.bindPopup("<b>RATÉ...</b><br>Ce n'est pas la commune de : <br><b>" + nomCom + "</b>").openPopup();
                 }
                 L.DomEvent.stopPropagation(e);
             });

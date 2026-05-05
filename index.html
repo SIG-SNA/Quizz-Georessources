@@ -205,7 +205,7 @@ document.getElementById('panelText').innerHTML = `
 
                 } else {
                     layer.setStyle({ fillColor: '#e74c3c', fillOpacity: 0.5 });
-                    var messagePopup = "<b>RATÉ...</b><br>C'est : " + feature.properties['NOM'];
+                    var messagePopup = "<b>RATÉ...</b><br>Ce n'est pas : " + feature.properties['NOM'];
                 }
                 layer.bindPopup(messagePopup).openPopup();
                 L.DomEvent.stopPropagation(e);
